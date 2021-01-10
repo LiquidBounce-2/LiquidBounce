@@ -215,36 +215,38 @@ class Scaffold2: Module() {
                 }
             }
 
-            if (zitterValue.get() && zitterModeValue.get().equals("Smooth", true)) {
-                if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
-                    mc.gameSettings.keyBindRight.pressed = false
-                }
-                if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft)) {
-                    mc.gameSettings.keyBindLeft.pressed = false
-                }
-                if (zitterTimer.hasTimePassed(100)) {
-                    zitterDirection = !zitterDirection
-                    zitterTimer.reset()
-                }
-                if (zitterDirection) {
-                    mc.gameSettings.keyBindRight.pressed = true
-                    mc.gameSettings.keyBindLeft.pressed = false
-                } else {
-                    mc.gameSettings.keyBindRight.pressed = false
-                    mc.gameSettings.keyBindLeft.pressed = true
+            if (zitterValue.get()) {
+                when(zitterModeValue.get().toLowerCase()) {
+                    "smooth" -> {
+                        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
+                            mc.gameSettings.keyBindRight.pressed = false
+                        }
+                        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft)) {
+                            mc.gameSettings.keyBindLeft.pressed = false
+                        }
+                        if (zitterTimer.hasTimePassed(100)) {
+                            zitterDirection = !zitterDirection
+                            zitterTimer.reset()
+                        }
+                        if (zitterDirection) {
+                            mc.gameSettings.keyBindRight.pressed = true
+                            mc.gameSettings.keyBindLeft.pressed = false
+                        } else {
+                            mc.gameSettings.keyBindRight.pressed = false
+                            mc.gameSettings.keyBindLeft.pressed = true
+                        }
+                    }
+                    "teleport" -> {
+                        val yaw: Double = Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
+                        MovementUtils.strafe(zitterSpeed.get())
+                        mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
+                        mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
+                        zitterDirection = !zitterDirection
+                    }
                 }
             }
-
             // Eagle part for bestnub
 
-
-
-            if (zitterValue.get() && zitterModeValue.get().equals("teleport", true)) {
-                MovementUtils.strafe(zitterSpeed.get())
-                val yaw: Double = Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
-                mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
-                mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
-                zitterDirection = !zitterDirection
             }
         }
     }
