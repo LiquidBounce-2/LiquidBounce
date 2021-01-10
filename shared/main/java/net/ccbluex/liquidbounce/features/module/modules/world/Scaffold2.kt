@@ -1,11 +1,13 @@
 package net.ccbluex.liquidbounce.features.module.modules.world
 
+import net.ccbluex.liquidbounce.api.minecraft.util.WBlockPos
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.utils.MovementUtils
 import net.ccbluex.liquidbounce.utils.Rotation
+import net.ccbluex.liquidbounce.utils.block.BlockUtils
 import net.ccbluex.liquidbounce.utils.block.PlaceInfo
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
 import net.ccbluex.liquidbounce.value.BoolValue
@@ -16,9 +18,14 @@ import org.lwjgl.input.Keyboard
 import kotlin.math.cos
 import kotlin.math.sin
 
-@ModuleInfo(name = "Scaffold2", description = "Automatically places blocks beneath your feet.", category = ModuleCategory.WORLD, keyBind = Keyboard.KEY_I)
+@ModuleInfo(
+    name = "Scaffold2",
+    description = "Automatically places blocks beneath your feet.",
+    category = ModuleCategory.WORLD,
+    keyBind = Keyboard.KEY_I
+)
 
-class Scaffold2: Module() {
+class Scaffold2 : Module() {
 
     private val modeValue = ListValue("Mode", arrayOf("Normal", "Rewinside", "Expand"), "Normal")
 
@@ -267,21 +274,32 @@ class Scaffold2: Module() {
 
     }
 
-// Entity movement event
+    // Entity movement event
     @EventTarget
     fun onMove(event: MoveEvent) {
 
     }
 
-// Scaffold visuals 2D
+    // Scaffold visuals 2D
     @EventTarget
     fun onRender2D(event: Render2DEvent) {
 
     }
 
-// Scaffold visuals 3D
+    // Scaffold visuals 3D
     @EventTarget
     fun onRender3D(event: Render3DEvent) {
 
     }
+
+    private fun search(blockPosition: WBlockPos): Boolean {
+        //Check if block can be (re)placed
+        if (!BlockUtils.isReplaceable(blockPosition))
+            return false
+
+
+
+        return false
+    }
+
 }
