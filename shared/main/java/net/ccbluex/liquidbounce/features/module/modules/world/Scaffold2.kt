@@ -182,7 +182,8 @@ class Scaffold2: Module() {
     private fun onUpdate(event: UpdateEvent) {
 
         mc.timer.timerSpeed = timerValue.get()
-        shouldGoDown = downValue.get() && !sameYValue.get() && mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak) //&& blocksAmount > 1
+        shouldGoDown =
+            downValue.get() && !sameYValue.get() && mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak) //&& blocksAmount > 1
 
         if (shouldGoDown) {
             mc.gameSettings.keyBindSneak.pressed = false
@@ -216,7 +217,7 @@ class Scaffold2: Module() {
             }
 
             if (zitterValue.get()) {
-                when(zitterModeValue.get().toLowerCase()) {
+                when (zitterModeValue.get().toLowerCase()) {
                     "smooth" -> {
                         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
                             mc.gameSettings.keyBindRight.pressed = false
@@ -237,7 +238,8 @@ class Scaffold2: Module() {
                         }
                     }
                     "teleport" -> {
-                        val yaw: Double = Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
+                        val yaw: Double =
+                            Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
                         MovementUtils.strafe(zitterSpeed.get())
                         mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
                         mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
@@ -247,7 +249,6 @@ class Scaffold2: Module() {
             }
             // Eagle part for bestnub
 
-            }
         }
     }
 
