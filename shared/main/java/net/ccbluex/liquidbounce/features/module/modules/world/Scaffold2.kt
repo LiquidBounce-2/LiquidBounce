@@ -22,7 +22,7 @@ import kotlin.math.sin
     name = "Scaffold2",
     description = "Automatically places blocks beneath your feet.",
     category = ModuleCategory.WORLD,
-    keyBind = Keyboard.KEY_I
+    keyBind = Keyboard.KEY_C
 )
 
 class Scaffold2 : Module() {
