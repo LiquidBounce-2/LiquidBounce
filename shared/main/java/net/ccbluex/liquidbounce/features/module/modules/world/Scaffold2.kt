@@ -1,20 +1,30 @@
 package net.ccbluex.liquidbounce.features.module.modules.world
 
+import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.api.minecraft.client.block.IBlock
+import net.ccbluex.liquidbounce.api.minecraft.item.IItemStack
 import net.ccbluex.liquidbounce.api.minecraft.util.WBlockPos
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
+import net.ccbluex.liquidbounce.features.module.modules.render.BlockOverlay
+import net.ccbluex.liquidbounce.ui.font.Fonts
+import net.ccbluex.liquidbounce.utils.InventoryUtils
 import net.ccbluex.liquidbounce.utils.MovementUtils
 import net.ccbluex.liquidbounce.utils.Rotation
+import net.ccbluex.liquidbounce.utils.RotationUtils
 import net.ccbluex.liquidbounce.utils.block.BlockUtils
 import net.ccbluex.liquidbounce.utils.block.PlaceInfo
+import net.ccbluex.liquidbounce.utils.render.RenderUtils
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
 import net.ccbluex.liquidbounce.value.BoolValue
 import net.ccbluex.liquidbounce.value.FloatValue
 import net.ccbluex.liquidbounce.value.IntegerValue
 import net.ccbluex.liquidbounce.value.ListValue
 import org.lwjgl.input.Keyboard
+import org.lwjgl.opengl.GL11
+import java.awt.Color
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -175,7 +185,6 @@ class Scaffold2 : Module() {
     private var shouldGoDown: Boolean = false
 
     override fun onEnable() {
-
         launchY = mc.thePlayer!!.posY.toInt()
     }
 
@@ -183,14 +192,13 @@ class Scaffold2 : Module() {
 
     }
 
-// Update events
+// Events
 
     @EventTarget
     private fun onUpdate(event: UpdateEvent) {
-
         mc.timer.timerSpeed = timerValue.get()
         shouldGoDown =
-            downValue.get() && !sameYValue.get() && mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak) //&& blocksAmount > 1
+            downValue.get() && !sameYValue.get() && mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak) && blocksAmount > 1
 
         if (shouldGoDown) {
             mc.gameSettings.keyBindSneak.pressed = false
@@ -277,13 +285,40 @@ class Scaffold2 : Module() {
     // Entity movement event
     @EventTarget
     fun onMove(event: MoveEvent) {
-
+        if (!safeWalkValue.get() || shouldGoDown)
+            return
+        if (airSafeValue.get() || mc.thePlayer!!.onGround) {
+            event.isSafeWalk = true
+        }
     }
 
     // Scaffold visuals 2D
     @EventTarget
     fun onRender2D(event: Render2DEvent) {
+        if (counterDisplayValue.get()) {
+            GL11.glPushMatrix()
+            val blockOverlay = LiquidBounce.moduleManager.getModule(BlockOverlay::class.java) as BlockOverlay
+            if (blockOverlay.state && blockOverlay.infoValue.get() && blockOverlay.currentBlock != null) {
+                GL11.glTranslatef(0f, 15f, 0f)
+            }
+            val info = "Blocks: §7$blocksAmount"
+            val scaledResolution = classProvider.createScaledResolution(mc)
 
+            RenderUtils.drawBorderedRect(
+                scaledResolution.scaledWidth / 2 - 2.toFloat(),
+                scaledResolution.scaledHeight / 2 + 5.toFloat(),
+                scaledResolution.scaledWidth / 2 + Fonts.font40.getStringWidth(info) + 2.toFloat(),
+                scaledResolution.scaledHeight / 2 + 16.toFloat(), 3f, Color.BLACK.rgb, Color.BLACK.rgb
+            )
+
+            classProvider.getGlStateManager().resetColor()
+
+            Fonts.font40.drawString(
+                info, scaledResolution.scaledWidth / 2.toFloat(),
+                scaledResolution.scaledHeight / 2 + 7.toFloat(), Color.WHITE.rgb
+            )
+            GL11.glPopMatrix()
+        }
     }
 
     // Scaffold visuals 3D
@@ -291,6 +326,8 @@ class Scaffold2 : Module() {
     fun onRender3D(event: Render3DEvent) {
 
     }
+
+// Other functions
 
     private fun search(blockPosition: WBlockPos): Boolean {
         //Check if block can be (re)placed
@@ -301,5 +338,46 @@ class Scaffold2 : Module() {
 
         return false
     }
+
+    private fun update() {
+
+    }
+
+    private fun findBlock(expand: Boolean) {
+
+    }
+
+    private fun setRotation(rotation: Rotation, keepRotation: Int) {
+        if (silentRotationValue.get()) {
+            RotationUtils.setTargetRotation(rotation, keepRotation)
+        } else {
+            mc.thePlayer!!.rotationYaw = rotation.yaw
+            mc.thePlayer!!.rotationPitch = rotation.pitch
+        }
+    }
+
+    private fun setRotation(rotation: Rotation) {
+        setRotation(rotation, 0)
+    }
+
+    // Return hotbar amount
+    private val blocksAmount: Int
+        get() {
+            var amount = 0
+            for (i in 36..44) {
+                val itemStack: IItemStack? = mc.thePlayer!!.inventoryContainer.getSlot(i).stack
+                if (itemStack != null && classProvider.isItemBlock(itemStack.item)) {
+                    val block: IBlock = (itemStack.item!!.asItemBlock()).block
+                    val heldItem: IItemStack? = mc.thePlayer!!.heldItem
+                    if (heldItem != null && heldItem == itemStack || !InventoryUtils.BLOCK_BLACKLIST.contains(block) && !classProvider.isBlockBush(
+                            block
+                        )
+                    ) {
+                        amount += itemStack.stackSize
+                    }
+                }
+            }
+            return amount
+        }
 
 }
