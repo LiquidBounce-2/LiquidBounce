@@ -233,6 +233,14 @@ class Scaffold2 : Module() {
 
             if (zitterValue.get()) {
                 when (zitterModeValue.get().toLowerCase()) {
+                    "teleport" -> {
+                        val yaw: Double =
+                            Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
+                        MovementUtils.strafe(zitterSpeed.get())
+                        mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
+                        mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
+                        zitterDirection = !zitterDirection
+                    }
                     "smooth" -> {
                         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
                             mc.gameSettings.keyBindRight.pressed = false
@@ -251,14 +259,6 @@ class Scaffold2 : Module() {
                             mc.gameSettings.keyBindRight.pressed = false
                             mc.gameSettings.keyBindLeft.pressed = true
                         }
-                    }
-                    "teleport" -> {
-                        val yaw: Double =
-                            Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
-                        MovementUtils.strafe(zitterSpeed.get())
-                        mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
-                        mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
-                        zitterDirection = !zitterDirection
                     }
                 }
             }
