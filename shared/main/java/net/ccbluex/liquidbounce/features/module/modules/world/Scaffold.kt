@@ -510,14 +510,14 @@ class Scaffold : Module() {
         if (mc.thePlayer == null) return
         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak)) {
             mc.gameSettings.keyBindSneak.pressed = false
-            if (eagleSneaking) {
-                mc.netHandler.addToSendQueue(
-                    classProvider.createCPacketEntityAction(
-                        mc.thePlayer!!,
-                        ICPacketEntityAction.WAction.STOP_SNEAKING
-                    )
+        }
+        if (eagleSneaking) {
+            mc.netHandler.addToSendQueue(
+                classProvider.createCPacketEntityAction(
+                    mc.thePlayer!!,
+                    ICPacketEntityAction.WAction.STOP_SNEAKING
                 )
-            }
+            )
         }
 
         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
