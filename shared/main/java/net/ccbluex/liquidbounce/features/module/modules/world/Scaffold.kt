@@ -223,14 +223,13 @@ class Scaffold : Module() {
         if (sprintValue.get()) {
             if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
                 mc.gameSettings.keyBindSprint.pressed = false
-            }
-            if (mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
+            } else {
                 mc.gameSettings.keyBindSprint.pressed = true
             }
             if (mc.gameSettings.keyBindSprint.isKeyDown) {
                 mc.thePlayer!!.sprinting = true
             }
-            if (!mc.gameSettings.keyBindSprint.isKeyDown) {
+            } else {
                 mc.thePlayer!!.sprinting = false
             }
         }
