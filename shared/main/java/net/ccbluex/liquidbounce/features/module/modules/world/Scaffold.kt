@@ -228,7 +228,6 @@ class Scaffold : Module() {
             }
             if (mc.gameSettings.keyBindSprint.isKeyDown) {
                 mc.thePlayer!!.sprinting = true
-            }
             } else {
                 mc.thePlayer!!.sprinting = false
             }
@@ -278,8 +277,9 @@ class Scaffold : Module() {
             if (edgeDistanceValue.get() > 0 && !shouldGoDown) {
                 for (facingType in EnumFacingType.values()) {
                     val side = classProvider.getEnumFacing(facingType)
-                    if (!side.isNorth() && !side.isEast() && !side.isSouth() && !side.isWest())
+                    if (!side.isNorth() && !side.isEast() && !side.isSouth() && !side.isWest()) {
                         continue
+                    }    
                     val blockPosition = WBlockPos(
                         mc.thePlayer!!.posX,
                         mc.thePlayer!!.posY - 1.0,
@@ -290,8 +290,9 @@ class Scaffold : Module() {
                         val calcDif = (if (side.isNorth() || side.isSouth())
                             abs((neighbor.z + 0.5) - mc.thePlayer!!.posZ) else
                             abs((neighbor.x + 0.5) - mc.thePlayer!!.posX)) - 0.5
-                        if (calcDif < dif)
+                        if (calcDif < dif) {
                             dif = calcDif
+                        }    
                     }
                 }
             }
