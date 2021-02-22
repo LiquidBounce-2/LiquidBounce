@@ -4,7 +4,7 @@
  * https://github.com/CCBlueX/LiquidBounce/
  */
 
-@file:Suppress("BooleanLiteralArgument")
+@file:Suppress("BooleanLiteralArgument", "RedundantIf")
 
 package net.ccbluex.liquidbounce.features.module.modules.world
 
@@ -223,14 +223,12 @@ class Scaffold : Module() {
         if (sprintValue.get()) {
             if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
                 mc.gameSettings.keyBindSprint.pressed = false
-            }
-            if (mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
+            } else {
                 mc.gameSettings.keyBindSprint.pressed = true
             }
             if (mc.gameSettings.keyBindSprint.isKeyDown) {
                 mc.thePlayer!!.sprinting = true
-            }
-            if (!mc.gameSettings.keyBindSprint.isKeyDown) {
+            } else {
                 mc.thePlayer!!.sprinting = false
             }
         }
@@ -279,8 +277,9 @@ class Scaffold : Module() {
             if (edgeDistanceValue.get() > 0 && !shouldGoDown) {
                 for (facingType in EnumFacingType.values()) {
                     val side = classProvider.getEnumFacing(facingType)
-                    if (!side.isNorth() && !side.isEast() && !side.isSouth() && !side.isWest())
+                    if (!side.isNorth() && !side.isEast() && !side.isSouth() && !side.isWest()) {
                         continue
+                    }    
                     val blockPosition = WBlockPos(
                         mc.thePlayer!!.posX,
                         mc.thePlayer!!.posY - 1.0,
@@ -291,8 +290,9 @@ class Scaffold : Module() {
                         val calcDif = (if (side.isNorth() || side.isSouth())
                             abs((neighbor.z + 0.5) - mc.thePlayer!!.posZ) else
                             abs((neighbor.x + 0.5) - mc.thePlayer!!.posX)) - 0.5
-                        if (calcDif < dif)
+                        if (calcDif < dif) {
                             dif = calcDif
+                        }    
                     }
                 }
             }
