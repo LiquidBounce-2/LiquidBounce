@@ -92,7 +92,8 @@ class Scaffold : Module() {
 
     // Rotation Options
     private val rotationStrafeValue = BoolValue("RotationStrafe", false)
-    private val rotationModeValue = ListValue("RotationMode", arrayOf("Normal", "Off"), "Normal")
+    private val rotationModeValue =
+        ListValue("RotationMode", arrayOf("Normal", "Static", "StaticPitch", "StaticYaw", "Off"), "Normal")
     private val silentRotationValue = BoolValue("SilentRotation", true)
     private val keepRotationValue = BoolValue("KeepRotation", true)
     private val keepLengthValue = IntegerValue("KeepRotationLength", 0, 0, 20)
@@ -198,7 +199,6 @@ class Scaffold : Module() {
 
     // ENABLING MODULE
     override fun onEnable() {
-
         if (mc.thePlayer == null) return
         launchY = mc.thePlayer!!.posY.toInt()
         slot = mc.thePlayer!!.inventory.currentItem
@@ -212,10 +212,10 @@ class Scaffold : Module() {
     @EventTarget
     private fun onUpdate(event: UpdateEvent) {
         mc.timer.timerSpeed = timerValue.get()
-        shouldGoDown = downValue.get() && !sameYValue.get() && mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak) && blocksAmount > 1
-        if (shouldGoDown) {
+        shouldGoDown =
+            downValue.get() && !sameYValue.get() && mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak) && blocksAmount > 1
+        if (shouldGoDown)
             mc.gameSettings.keyBindSneak.pressed = false
-        }
         if (slowValue.get()) {
             mc.thePlayer!!.motionX = mc.thePlayer!!.motionX * slowSpeed.get()
             mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ * slowSpeed.get()
@@ -223,12 +223,14 @@ class Scaffold : Module() {
         if (sprintValue.get()) {
             if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
                 mc.gameSettings.keyBindSprint.pressed = false
-            } else {
+            }
+            if (mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
                 mc.gameSettings.keyBindSprint.pressed = true
             }
             if (mc.gameSettings.keyBindSprint.isKeyDown) {
                 mc.thePlayer!!.sprinting = true
-            } else {
+            }
+            if (!mc.gameSettings.keyBindSprint.isKeyDown) {
                 mc.thePlayer!!.sprinting = false
             }
         }
@@ -239,35 +241,23 @@ class Scaffold : Module() {
                     mc.thePlayer!!.motionY = 0.0
                 }
             }
-            if(zitterValue.get()) {
-                when (zitterModeValue.get().toLowerCase()) {
-                    "smooth" -> {
-                        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
-                            mc.gameSettings.keyBindRight.pressed = false
-                        }
-                        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft)) {
-                            mc.gameSettings.keyBindLeft.pressed = false
-                        }
-                        if (zitterTimer.hasTimePassed(100)) {
-                            zitterDirection = !zitterDirection
-                            zitterTimer.reset()
-                        }
-                        if (zitterDirection) {
-                            mc.gameSettings.keyBindRight.pressed = true
-                            mc.gameSettings.keyBindLeft.pressed = false
-                        } else {
-                            mc.gameSettings.keyBindRight.pressed = false
-                            mc.gameSettings.keyBindLeft.pressed = true
-                        }
-                    }
-                    "teleport" -> {
-                        val yaw: Double =
-                            Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
-                        MovementUtils.strafe(zitterSpeed.get())
-                        mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
-                        mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
-                        zitterDirection = !zitterDirection
-                    }
+            if (zitterValue.get() && zitterModeValue.get().equals("Smooth", true)) {
+                if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
+                    mc.gameSettings.keyBindRight.pressed = false
+                }
+                if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft)) {
+                    mc.gameSettings.keyBindLeft.pressed = false
+                }
+                if (zitterTimer.hasTimePassed(100)) {
+                    zitterDirection = !zitterDirection
+                    zitterTimer.reset()
+                }
+                if (zitterDirection) {
+                    mc.gameSettings.keyBindRight.pressed = true
+                    mc.gameSettings.keyBindLeft.pressed = false
+                } else {
+                    mc.gameSettings.keyBindRight.pressed = false
+                    mc.gameSettings.keyBindLeft.pressed = true
                 }
             }
         }
@@ -277,9 +267,8 @@ class Scaffold : Module() {
             if (edgeDistanceValue.get() > 0 && !shouldGoDown) {
                 for (facingType in EnumFacingType.values()) {
                     val side = classProvider.getEnumFacing(facingType)
-                    if (!side.isNorth() && !side.isEast() && !side.isSouth() && !side.isWest()) {
+                    if (!side.isNorth() && !side.isEast() && !side.isSouth() && !side.isWest())
                         continue
-                    }    
                     val blockPosition = WBlockPos(
                         mc.thePlayer!!.posX,
                         mc.thePlayer!!.posY - 1.0,
@@ -290,9 +279,8 @@ class Scaffold : Module() {
                         val calcDif = (if (side.isNorth() || side.isSouth())
                             abs((neighbor.z + 0.5) - mc.thePlayer!!.posZ) else
                             abs((neighbor.x + 0.5) - mc.thePlayer!!.posX)) - 0.5
-                        if (calcDif < dif) {
+                        if (calcDif < dif)
                             dif = calcDif
-                        }    
                     }
                 }
             }
@@ -324,6 +312,14 @@ class Scaffold : Module() {
                 placedBlocksWithoutEagle++
             }
         }
+        if (zitterValue.get() && zitterModeValue.get().equals("teleport", true)) {
+            MovementUtils.strafe(zitterSpeed.get())
+            val yaw: Double =
+                Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
+            mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
+            mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
+            zitterDirection = !zitterDirection
+        }
     }
 
     @EventTarget
@@ -338,9 +334,7 @@ class Scaffold : Module() {
 
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
-        if (!rotationStrafeValue.get()) {
-            return
-        }
+        if (!rotationStrafeValue.get()) return
         RotationUtils.serverRotation.applyStrafeToPlayer(event)
         event.cancelEvent()
     }
@@ -350,30 +344,31 @@ class Scaffold : Module() {
         val eventState: EventState = event.eventState
 
         // Lock Rotation
-        if (!rotationModeValue.get().equals("Off", true) && keepRotationValue.get() && lockRotation != null) {
+        if (!rotationModeValue.get().equals("Off", true) && keepRotationValue.get() && lockRotation != null)
             setRotation(lockRotation!!)
-        }
 
-        if ((facesBlock || rotationModeValue.get().equals("Off", true)) && placeModeValue.get().equals(eventState.stateName, true)) {
+        if ((facesBlock || rotationModeValue.get().equals("Off", true)) && placeModeValue.get()
+                .equals(eventState.stateName, true)
+        )
             place()
-        }
 
         // Update and search for a new block
-        if (eventState == EventState.PRE) {
+        if (eventState == EventState.PRE)
             update()
-        }
 
         // Reset placeable delay
-        if (targetPlace == null && placeableDelay.get()) {
+        if (targetPlace == null && placeableDelay.get())
             delayTimer.reset()
-        }
     }
 
     fun update() {
-        val isHeldItemBlock: Boolean = mc.thePlayer!!.heldItem != null && classProvider.isItemBlock(mc.thePlayer!!.heldItem!!.item)
-        if (if (!autoBlockValue.get().equals("Off", true)) InventoryUtils.findAutoBlockBlock() == -1 && !isHeldItemBlock else !isHeldItemBlock) {
+        val isHeldItemBlock: Boolean =
+            mc.thePlayer!!.heldItem != null && classProvider.isItemBlock(mc.thePlayer!!.heldItem!!.item)
+        if (if (!autoBlockValue.get()
+                    .equals("Off", true)
+            ) InventoryUtils.findAutoBlockBlock() == -1 && !isHeldItemBlock else !isHeldItemBlock
+        )
             return
-        }
         findBlock(modeValue.get().equals("expand", true))
     }
 
@@ -409,49 +404,54 @@ class Scaffold : Module() {
                     mc.thePlayer!!.posY,
                     mc.thePlayer!!.posZ
                 ).down()))
-        if (!expand && (!isReplaceable(blockPosition) || search(blockPosition, !shouldGoDown))) {
+        if (!expand && (!isReplaceable(blockPosition) || search(blockPosition, !shouldGoDown)))
             return
-        }
         if (expand) {
             for (i in 0 until expandLengthValue.get()) {
-                if (search(blockPosition.add(if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.WEST)) -i else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.EAST)) i else 0, 0, if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.NORTH)) -i else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.SOUTH)) i else 0), false)) {
+                if (search(
+                        blockPosition.add(
+                            if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(
+                                    EnumFacingType.WEST
+                                )
+                            ) -i else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.EAST)) i else 0,
+                            0,
+                            if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.NORTH)) -i else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(
+                                    EnumFacingType.SOUTH
+                                )
+                            ) i else 0
+                        ), false
+                    )
+                )
                     return
-                }
             }
         } else if (searchValue.get()) {
-            for (x in -1..1) {
-                for (z in -1..1) {
-                    if (search(blockPosition.add(x, 0, z), !shouldGoDown)) {
+            for (x in -1..1)
+                for (z in -1..1)
+                    if (search(blockPosition.add(x, 0, z), !shouldGoDown))
                         return
-                    }
-                }
-            }
         }
     }
 
     fun place() {
         if (targetPlace == null) {
-            if (placeableDelay.get()) {
-                delayTimer.reset()
-            }
+            if (placeableDelay.get()) delayTimer.reset()
             return
         }
 
-        if (!delayTimer.hasTimePassed(delay) || sameYValue.get() && launchY - 1 != targetPlace!!.vec3.yCoord.toInt()) {
+        if (!delayTimer.hasTimePassed(delay) || sameYValue.get() && launchY - 1 != targetPlace!!.vec3.yCoord.toInt())
             return
-        }
 
         var itemStack: IItemStack? = mc.thePlayer!!.heldItem
-        if (itemStack == null || !classProvider.isItemBlock(itemStack.item) || classProvider.isBlockBush(itemStack.item!!.asItemBlock().block) || mc.thePlayer!!.heldItem!!.stackSize <= 0) {
-            if (autoBlockValue.get().equals("Off", true)) {
+        if (itemStack == null || !classProvider.isItemBlock(itemStack.item) ||
+            classProvider.isBlockBush(itemStack.item!!.asItemBlock().block) || mc.thePlayer!!.heldItem!!.stackSize <= 0
+        ) {
+            if (autoBlockValue.get().equals("Off", true))
                 return
-            }
 
             val blockSlot = InventoryUtils.findAutoBlockBlock()
 
-            if (blockSlot == -1) {
+            if (blockSlot == -1)
                 return
-            }
             when (autoBlockValue.get()) {
                 "Off" -> {
                     return
@@ -491,16 +491,14 @@ class Scaffold : Module() {
                 mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ * modifier
             }
 
-            if (swingValue.get()) {
+            if (swingValue.get())
                 mc.thePlayer!!.swingItem()
-            } else {
+            else
                 mc.netHandler.addToSendQueue(classProvider.createCPacketAnimation())
-            }
         }
         if (autoBlockValue.get().equals("Switch", true)) {
-            if (slot != mc.thePlayer!!.inventory.currentItem) {
+            if (slot != mc.thePlayer!!.inventory.currentItem)
                 mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(mc.thePlayer!!.inventory.currentItem))
-            }
         }
         targetPlace = null
     }
@@ -510,43 +508,36 @@ class Scaffold : Module() {
         if (mc.thePlayer == null) return
         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak)) {
             mc.gameSettings.keyBindSneak.pressed = false
-        }
-        if (eagleSneaking) {
-            mc.netHandler.addToSendQueue(
-                classProvider.createCPacketEntityAction(
-                    mc.thePlayer!!,
-                    ICPacketEntityAction.WAction.STOP_SNEAKING
+            if (eagleSneaking)
+                mc.netHandler.addToSendQueue(
+                    classProvider.createCPacketEntityAction(
+                        mc.thePlayer!!,
+                        ICPacketEntityAction.WAction.STOP_SNEAKING
+                    )
                 )
-            )
         }
-
-        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
+        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight))
             mc.gameSettings.keyBindRight.pressed = false
-        }
-        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft)) {
+        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft))
             mc.gameSettings.keyBindLeft.pressed = false
-        }
 
         lockRotation = null
         facesBlock = false
         mc.timer.timerSpeed = 1f
         shouldGoDown = false
 
-        if (slot != mc.thePlayer!!.inventory.currentItem) {
+        if (slot != mc.thePlayer!!.inventory.currentItem)
             mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(mc.thePlayer!!.inventory.currentItem))
-        }
     }
 
     // Entity movement event
     /** @param event */
     @EventTarget
     fun onMove(event: MoveEvent) {
-        if (!safeWalkValue.get() || shouldGoDown) {
+        if (!safeWalkValue.get() || shouldGoDown)
             return
-        }
-        if (airSafeValue.get() || mc.thePlayer!!.onGround) {
+        if (airSafeValue.get() || mc.thePlayer!!.onGround)
             event.isSafeWalk = true
-        }
     }
 
     // Scaffold visuals
@@ -630,15 +621,18 @@ class Scaffold : Module() {
             if (!canBeClicked(neighbor)) continue
             val dirVec = WVec3(side.directionVec)
             var xSearch = 0.5 - xzRV / 2
-            var ySearch = 0.5 - yRV / 2
-            var zSearch = 0.5 - xzRV / 2
             while (xSearch <= 0.5 + xzRV / 2) {
+                var ySearch = 0.5 - yRV / 2
                 while (ySearch <= 0.5 + yRV / 2) {
+                    var zSearch = 0.5 - xzRV / 2
                     while (zSearch <= 0.5 + xzRV / 2) {
                         val posVec = WVec3(blockPosition).addVector(xSearch, ySearch, zSearch)
                         val distanceSqPosVec = eyesPos.squareDistanceTo(posVec)
                         val hitVec = posVec.add(WVec3(dirVec.xCoord * 0.5, dirVec.yCoord * 0.5, dirVec.zCoord * 0.5))
-                        if (checks && (eyesPos.squareDistanceTo(hitVec) > 18.0 || distanceSqPosVec > eyesPos.squareDistanceTo(posVec.add(dirVec)) || mc.theWorld!!.rayTraceBlocks(eyesPos, hitVec, false, true, false) != null)) {
+                        if (checks && (eyesPos.squareDistanceTo(hitVec) > 18.0 || distanceSqPosVec > eyesPos.squareDistanceTo(
+                                posVec.add(dirVec)
+                            ) || mc.theWorld!!.rayTraceBlocks(eyesPos, hitVec, false, true, false) != null)
+                        ) {
                             zSearch += xzSSV
                             continue
                         }
@@ -666,13 +660,17 @@ class Scaffold : Module() {
                             rotationVector.zCoord * 4.2
                         )
                         val obj = mc.theWorld!!.rayTraceBlocks(eyesPos, vector, false, false, true)
-                        if (obj!!.typeOfHit != IMovingObjectPosition.WMovingObjectType.BLOCK || obj.blockPos!! != neighbor) {
+                        if (obj!!.typeOfHit !== IMovingObjectPosition.WMovingObjectType.BLOCK || obj!!.blockPos!! != neighbor) {
                             zSearch += xzSSV
                             continue
                         }
-                        if (placeRotation == null || RotationUtils.getRotationDifference(rotation) < RotationUtils.getRotationDifference(placeRotation.rotation)) {
+                        if (placeRotation == null || RotationUtils.getRotationDifference(rotation) < RotationUtils.getRotationDifference(
+                                placeRotation.rotation
+                            )
+                        ) {
                             placeRotation = PlaceRotation(PlaceInfo(neighbor, side.opposite, hitVec), rotation)
                         }
+
                         zSearch += xzSSV
                     }
                     ySearch += ySSV
@@ -689,10 +687,10 @@ class Scaffold : Module() {
                     (Math.random() * (maxTurnSpeedValue.get() - minTurnSpeedValue.get()) + minTurnSpeedValue.get()).toFloat()
                 )
 
-                if ((10 * MathHelper.wrapAngleTo180_float(limitedRotation.yaw)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
+                if ((10 * MathHelper.wrapAngleTo180_float(limitedRotation!!.yaw)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
                         placeRotation.rotation.yaw
                     )).roundToInt() &&
-                    (10 * MathHelper.wrapAngleTo180_float(limitedRotation.pitch)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
+                    (10 * MathHelper.wrapAngleTo180_float(limitedRotation!!.pitch)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
                         placeRotation.rotation.pitch
                     )).roundToInt()
                 ) {
@@ -700,7 +698,7 @@ class Scaffold : Module() {
                     lockRotation = placeRotation.rotation
                     facesBlock = true
                 } else {
-                    setRotation(limitedRotation, keepLengthValue.get())
+                    setRotation(limitedRotation!!, keepLengthValue.get())
                     lockRotation = limitedRotation
                     facesBlock = false
                 }
