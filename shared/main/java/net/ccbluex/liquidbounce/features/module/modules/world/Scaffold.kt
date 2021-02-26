@@ -32,6 +32,7 @@ import net.ccbluex.liquidbounce.utils.block.BlockUtils.isReplaceable
 import net.ccbluex.liquidbounce.utils.block.PlaceInfo
 import net.ccbluex.liquidbounce.utils.render.RenderUtils
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
+import net.ccbluex.liquidbounce.utils.timer.TickTimer
 import net.ccbluex.liquidbounce.utils.timer.TimeUtils
 import net.ccbluex.liquidbounce.value.BoolValue
 import net.ccbluex.liquidbounce.value.FloatValue
@@ -173,6 +174,7 @@ class Scaffold : Module() {
 
     // Rotation lock
     private var lockRotation: Rotation? = null
+    private var lockRotationTimer = TickTimer()
 
 
     // Launch position
@@ -335,7 +337,32 @@ class Scaffold : Module() {
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
         if (!rotationStrafeValue.get()) return
-        RotationUtils.serverRotation.applyStrafeToPlayer(event)
+        // Lock Rotation
+        if (!rotationModeValue.get().equals("Off", true)
+            && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
+            && lockRotation != null
+        ) {
+            if (targetPlace == null) {
+                var yaw = 0F
+                for (i in 0..7) {
+                    if (abs(
+                            RotationUtils.getAngleDifference(
+                                lockRotation!!.yaw,
+                                (i * 45).toFloat()
+                            )
+                        ) < abs(RotationUtils.getAngleDifference(lockRotation!!.yaw, yaw))
+                    ) {
+                        yaw = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
+                    }
+                }
+                lockRotation!!.yaw = yaw
+            }
+            setRotation(lockRotation!!)
+            lockRotationTimer.update()
+        }
+        update()
+
+        lockRotation!!.applyStrafeToPlayer(event)
         event.cancelEvent()
     }
 
@@ -344,16 +371,21 @@ class Scaffold : Module() {
         val eventState: EventState = event.eventState
 
         // Lock Rotation
-        if (!rotationModeValue.get().equals("Off", true) && keepRotationValue.get() && lockRotation != null)
+        if (!rotationModeValue.get().equals("Off", true)
+            && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
+            && lockRotation != null
+            && !rotationStrafeValue.get()
+        ) {
             setRotation(lockRotation!!)
+            lockRotationTimer.update()
+        }
 
         if ((facesBlock || rotationModeValue.get().equals("Off", true)) && placeModeValue.get()
                 .equals(eventState.stateName, true)
         )
             place()
-
         // Update and search for a new block
-        if (eventState == EventState.PRE)
+        if (eventState == EventState.PRE && !rotationStrafeValue.get())
             update()
 
         // Reset placeable delay
@@ -372,17 +404,13 @@ class Scaffold : Module() {
         findBlock(modeValue.get().equals("expand", true))
     }
 
-    private fun setRotation(rotation: Rotation, keepRotation: Int) {
+    private fun setRotation(rotation: Rotation) {
         if (silentRotationValue.get()) {
-            RotationUtils.setTargetRotation(rotation, keepRotation)
+            RotationUtils.setTargetRotation(rotation, 0)
         } else {
             mc.thePlayer!!.rotationYaw = rotation.yaw
             mc.thePlayer!!.rotationPitch = rotation.pitch
         }
-    }
-
-    private fun setRotation(rotation: Rotation) {
-        setRotation(rotation, 0)
     }
 
     // Search for new target block
@@ -602,6 +630,7 @@ class Scaffold : Module() {
      */
 
     private fun search(blockPosition: WBlockPos, checks: Boolean): Boolean {
+        facesBlock = false
         if (!isReplaceable(blockPosition)) return false
 
         // Search Ranges
@@ -687,26 +716,27 @@ class Scaffold : Module() {
                     (Math.random() * (maxTurnSpeedValue.get() - minTurnSpeedValue.get()) + minTurnSpeedValue.get()).toFloat()
                 )
 
-                if ((10 * MathHelper.wrapAngleTo180_float(limitedRotation!!.yaw)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
+                if ((10 * MathHelper.wrapAngleTo180_float(limitedRotation.yaw)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
                         placeRotation.rotation.yaw
                     )).roundToInt() &&
-                    (10 * MathHelper.wrapAngleTo180_float(limitedRotation!!.pitch)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
+                    (10 * MathHelper.wrapAngleTo180_float(limitedRotation.pitch)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
                         placeRotation.rotation.pitch
                     )).roundToInt()
                 ) {
-                    setRotation(placeRotation.rotation, keepLengthValue.get())
+                    setRotation(placeRotation.rotation)
                     lockRotation = placeRotation.rotation
                     facesBlock = true
                 } else {
-                    setRotation(limitedRotation!!, keepLengthValue.get())
+                    setRotation(limitedRotation)
                     lockRotation = limitedRotation
                     facesBlock = false
                 }
             } else {
-                setRotation(placeRotation.rotation, keepLengthValue.get())
+                setRotation(placeRotation.rotation)
                 lockRotation = placeRotation.rotation
                 facesBlock = true
             }
+            lockRotationTimer.reset()
         }
         targetPlace = placeRotation.placeInfo
         return true
