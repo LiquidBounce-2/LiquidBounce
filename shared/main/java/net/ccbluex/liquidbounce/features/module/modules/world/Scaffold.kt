@@ -92,9 +92,9 @@ class Scaffold : Module() {
     private val expandLengthValue = IntegerValue("ExpandLength", 1, 1, 6)
 
     // Rotation Options
-    private val rotationStrafeValue = BoolValue("RotationStrafe", false)
+    private val strafeValue = ListValue("Strafe", arrayOf("Off", "AAC"), "Off")
     private val rotationModeValue =
-        ListValue("RotationMode", arrayOf("Normal", "Static", "StaticPitch", "StaticYaw", "Off"), "Normal")
+        ListValue("RotationMode", arrayOf("Normal", "Off"), "Normal")
     private val silentRotationValue = BoolValue("SilentRotation", true)
     private val keepRotationValue = BoolValue("KeepRotation", true)
     private val keepLengthValue = IntegerValue("KeepRotationLength", 0, 0, 20)
@@ -245,7 +245,7 @@ class Scaffold : Module() {
             }
             if (zitterValue.get()) {
                 when (zitterModeValue.get().toLowerCase()) {
-                    "smooth" -> {
+                    "Smooth" -> {
                         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
                             mc.gameSettings.keyBindRight.pressed = false
                         }
@@ -264,7 +264,7 @@ class Scaffold : Module() {
                             mc.gameSettings.keyBindLeft.pressed = true
                         }
                     }
-                    "teleport" -> {
+                    "Teleport" -> {
                         MovementUtils.strafe(zitterSpeed.get())
                         val yaw: Double =
                             Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
@@ -340,33 +340,35 @@ class Scaffold : Module() {
 
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
-        if (!rotationStrafeValue.get()) return
-        // Lock Rotation
-        if (!rotationModeValue.get().equals("Off", true)
-            && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
-            && lockRotation != null
-        ) {
-            if (targetPlace == null) {
-                var yaw = 0F
-                for (i in 0..7) {
-                    if (abs(
-                            RotationUtils.getAngleDifference(
-                                lockRotation!!.yaw,
-                                (i * 45).toFloat()
-                            )
-                        ) < abs(RotationUtils.getAngleDifference(lockRotation!!.yaw, yaw))
-                    ) {
-                        yaw = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
+        if (strafeValue.get().equals("Off", true)) {
+            return
+        } else {
+            if (!rotationModeValue.get().equals("Off", true)
+                && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
+                && lockRotation != null
+            ) {
+                if (targetPlace == null) {
+                    var yaw = 0F
+                    for (i in 0..7) {
+                        if (abs(
+                                RotationUtils.getAngleDifference(
+                                    lockRotation!!.yaw,
+                                    (i * 45).toFloat()
+                                )
+                            ) < abs(RotationUtils.getAngleDifference(lockRotation!!.yaw, yaw))
+                        ) {
+                            yaw = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
+                        }
                     }
+                    lockRotation!!.yaw = yaw
                 }
-                lockRotation!!.yaw = yaw
+                setRotation(lockRotation!!)
+                lockRotationTimer.update()
             }
-            setRotation(lockRotation!!)
-            lockRotationTimer.update()
-        }
-        update()
+            update()
 
-        lockRotation!!.applyStrafeToPlayer(event)
+            lockRotation!!.applyStrafeToPlayer(event)
+        }
         event.cancelEvent()
     }
 
@@ -378,7 +380,7 @@ class Scaffold : Module() {
         if (!rotationModeValue.get().equals("Off", true)
             && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
             && lockRotation != null
-            && !rotationStrafeValue.get()
+            && strafeValue.get().equals("Off", true)
         ) {
             setRotation(lockRotation!!)
             lockRotationTimer.update()
@@ -389,7 +391,7 @@ class Scaffold : Module() {
         )
             place()
         // Update and search for a new block
-        if (eventState == EventState.PRE && !rotationStrafeValue.get())
+        if (eventState == EventState.PRE && strafeValue.get().equals("Off", true))
             update()
 
         // Reset placeable delay
