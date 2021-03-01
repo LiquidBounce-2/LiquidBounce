@@ -93,8 +93,7 @@ class Scaffold : Module() {
 
     // Rotation Options
     private val strafeValue = ListValue("Strafe", arrayOf("Off", "AAC"), "Off")
-    private val rotationModeValue =
-        ListValue("RotationMode", arrayOf("Normal", "Off"), "Normal")
+    private val rotationsValue = BoolValue("Rotations", true)
     private val silentRotationValue = BoolValue("SilentRotation", true)
     private val keepRotationValue = BoolValue("KeepRotation", true)
     private val keepLengthValue = IntegerValue("KeepRotationLength", 0, 0, 20)
@@ -340,10 +339,10 @@ class Scaffold : Module() {
 
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
-        if (strafeValue.get().equals("Off", true)) {
+        if(strafeValue.get().equals("Off", true)) {
             return
         } else {
-            if (!rotationModeValue.get().equals("Off", true)
+            if (rotationsValue.get()
                 && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
                 && lockRotation != null
             ) {
@@ -377,7 +376,7 @@ class Scaffold : Module() {
         val eventState: EventState = event.eventState
 
         // Lock Rotation
-        if (!rotationModeValue.get().equals("Off", true)
+        if (rotationsValue.get()
             && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
             && lockRotation != null
             && strafeValue.get().equals("Off", true)
@@ -386,7 +385,7 @@ class Scaffold : Module() {
             lockRotationTimer.update()
         }
 
-        if ((facesBlock || rotationModeValue.get().equals("Off", true)) && placeModeValue.get()
+        if ((facesBlock || !rotationsValue.get()) && placeModeValue.get()
                 .equals(eventState.stateName, true)
         )
             place()
@@ -714,7 +713,7 @@ class Scaffold : Module() {
             }
         }
         if (placeRotation == null) return false
-        if (!rotationModeValue.get().equals("Off", ignoreCase = true)) {
+        if (rotationsValue.get()) {
             if (minTurnSpeedValue.get() < 180) {
                 val limitedRotation = RotationUtils.limitAngleChange(
                     RotationUtils.serverRotation,
