@@ -98,7 +98,7 @@ class Scaffold : Module() {
     private val keepRotationValue = BoolValue("KeepRotation", true)
     private val keepLengthValue = IntegerValue("KeepRotationLength", 0, 0, 20)
 
-    // xz + y range
+    // XZ/Y range
     private val xzRangeValue = FloatValue("xzRange", 0.8f, 0f, 1f)
     private val yRangeValue = FloatValue("yRange", 0.8f, 0f, 1f)
     private val minDiffValue = FloatValue("MinDiff", 0.0f, 0.0f, 0.2f)
@@ -147,14 +147,7 @@ class Scaffold : Module() {
     // Game
     private val timerValue = FloatValue("Timer", 1f, 0.1f, 10f)
     private val speedModifierValue = FloatValue("SpeedModifier", 1f, 0f, 2f)
-    private val slowValue = object : BoolValue("Slow", false) {
-        override fun onChanged(oldValue: Boolean, newValue: Boolean) {
-            if (newValue) {
-                sprintValue.set(false)
-            }
-        }
-    }
-
+    private val slowValue = BoolValue("Slow", false)
     private val slowSpeed = FloatValue("SlowSpeed", 0.6f, 0.2f, 0.8f)
 
     // Safety
@@ -166,7 +159,7 @@ class Scaffold : Module() {
     private val counterDisplayValue = BoolValue("Counter", true)
     private val markValue = BoolValue("Mark", false)
 
-// MODULE
+// Variables
 
     // Target block
     private var targetPlace: PlaceInfo? = null
@@ -694,7 +687,7 @@ class Scaffold : Module() {
                             rotationVector.zCoord * 4.2
                         )
                         val obj = mc.theWorld!!.rayTraceBlocks(eyesPos, vector, false, false, true)
-                        if (obj!!.typeOfHit !== IMovingObjectPosition.WMovingObjectType.BLOCK || obj!!.blockPos!! != neighbor) {
+                        if (obj!!.typeOfHit != IMovingObjectPosition.WMovingObjectType.BLOCK || obj!!.blockPos!! != neighbor) {
                             zSearch += xzSSV
                             continue
                         }
