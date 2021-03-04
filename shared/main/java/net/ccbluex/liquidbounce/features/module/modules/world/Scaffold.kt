@@ -687,7 +687,7 @@ class Scaffold : Module() {
                             rotationVector.zCoord * 4.2
                         )
                         val obj = mc.theWorld!!.rayTraceBlocks(eyesPos, vector, false, false, true)
-                        if (obj!!.typeOfHit != IMovingObjectPosition.WMovingObjectType.BLOCK || obj!!.blockPos!! != neighbor) {
+                        if (obj!!.typeOfHit != IMovingObjectPosition.WMovingObjectType.BLOCK || obj.blockPos!! != neighbor) {
                             zSearch += xzSSV
                             continue
                         }
