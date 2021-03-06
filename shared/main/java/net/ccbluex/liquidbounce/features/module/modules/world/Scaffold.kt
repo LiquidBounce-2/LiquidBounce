@@ -236,7 +236,7 @@ class Scaffold : Module() {
                 }
             }
             if (zitterValue.get()) {
-                when (zitterModeValue.get().toLowerCase()) {
+                when (zitterModeValue.get()) {
                     "Smooth" -> {
                         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
                             mc.gameSettings.keyBindRight.pressed = false
