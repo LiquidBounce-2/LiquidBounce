@@ -141,7 +141,7 @@ class Scaffold : Module() {
     // Zitter
     private val zitterValue = BoolValue("Zitter", false)
     private val zitterModeValue = ListValue("ZitterMode", arrayOf("Teleport", "Smooth"), "Teleport")
-    private val zitterSpeed = FloatValue("ZitterSpeed", 0.13f, 0.1f, 2f)
+    private val zitterSpeed = FloatValue("ZitterSpeed", 0.13f, 0.1f, 0.3f)
     private val zitterStrength = FloatValue("ZitterStrength", 0.05f, 0f, 0.2f)
 
     // Game
