@@ -495,7 +495,7 @@ class Scaffold : Module() {
             )
         ) {
             delayTimer.reset()
-            delay = TimeUtils.randomDelay(minDelayValue.get(), maxDelayValue.get())
+            delay = if(!placeableDelay.get()) 0 else TimeUtils.randomDelay(minDelayValue.get(), maxDelayValue.get())
 
             if (mc.thePlayer!!.onGround) {
                 val modifier: Float = speedModifierValue.get()
@@ -509,8 +509,9 @@ class Scaffold : Module() {
                 mc.netHandler.addToSendQueue(classProvider.createCPacketAnimation())
         }
         if (autoBlockValue.get().equals("Switch", true)) {
-            if (slot != mc.thePlayer!!.inventory.currentItem)
+            if (slot != mc.thePlayer!!.inventory.currentItem) {
                 mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(mc.thePlayer!!.inventory.currentItem))
+            }    
         }
         targetPlace = null
     }
