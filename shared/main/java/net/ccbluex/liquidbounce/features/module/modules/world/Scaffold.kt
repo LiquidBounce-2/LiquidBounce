@@ -344,7 +344,6 @@ class Scaffold : Module() {
                 lockRotationTimer.update()
             }
             update()
-
             lockRotation!!.applyStrafeToPlayer(event)
         }
         event.cancelEvent()
@@ -363,7 +362,8 @@ class Scaffold : Module() {
             setRotation(lockRotation!!)
             lockRotationTimer.update()
         }
-
+        
+        // Face block
         if ((facesBlock || !rotationsValue.get()) && placeModeValue.get()
                 .equals(eventState.stateName, true)
         )
@@ -446,7 +446,8 @@ class Scaffold : Module() {
 
     fun place() {
         if (targetPlace == null) {
-            if (placeableDelay.get()) delayTimer.reset()
+            if (placeableDelay.get()) 
+                delayTimer.reset()
             return
         }
 
@@ -457,13 +458,11 @@ class Scaffold : Module() {
         if (itemStack == null || !classProvider.isItemBlock(itemStack.item) ||
             classProvider.isBlockBush(itemStack.item!!.asItemBlock().block) || mc.thePlayer!!.heldItem!!.stackSize <= 0
         ) {
-            if (autoBlockValue.get().equals("Off", true))
-                return
-
+            
             val blockSlot = InventoryUtils.findAutoBlockBlock()
-
             if (blockSlot == -1)
                 return
+            
             when (autoBlockValue.get()) {
                 "Off" -> {
                     return
@@ -485,6 +484,7 @@ class Scaffold : Module() {
             }
             itemStack = mc.thePlayer!!.inventoryContainer.getSlot(blockSlot).stack
         }
+        
         if (mc.playerController.onPlayerRightClick(
                 mc.thePlayer!!,
                 mc.theWorld!!,
