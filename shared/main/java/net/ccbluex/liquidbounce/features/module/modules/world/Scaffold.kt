@@ -214,20 +214,6 @@ class Scaffold : Module() {
             mc.thePlayer!!.motionX = mc.thePlayer!!.motionX * slowSpeed.get()
             mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ * slowSpeed.get()
         }
-        if (sprintValue.get()) {
-            if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
-                mc.gameSettings.keyBindSprint.pressed = false
-            }
-            if (mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSprint)) {
-                mc.gameSettings.keyBindSprint.pressed = true
-            }
-            if (mc.gameSettings.keyBindSprint.isKeyDown) {
-                mc.thePlayer!!.sprinting = true
-            }
-            if (!mc.gameSettings.keyBindSprint.isKeyDown) {
-                mc.thePlayer!!.sprinting = false
-            }
-        }
         if (mc.thePlayer!!.onGround) {
             when (modeValue.get().toLowerCase()) {
                 "rewinside" -> {
