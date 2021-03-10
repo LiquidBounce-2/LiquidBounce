@@ -670,9 +670,9 @@ class Scaffold : Module() {
                         )
                         val rotationVector = RotationUtils.getVectorForRotation(rotation)
                         val vector = eyesPos.addVector(
-                            rotationVector.xCoord * 4.2,
-                            rotationVector.yCoord * 4.2,
-                            rotationVector.zCoord * 4.2
+                            rotationVector.xCoord * distanceSqPosVec,
+                            rotationVector.yCoord * distanceSqPosVec,
+                            rotationVector.zCoord * distanceSqPosVec
                         )
                         val obj = mc.theWorld!!.rayTraceBlocks(eyesPos, vector, false, false, true)
                         if (obj!!.typeOfHit != IMovingObjectPosition.WMovingObjectType.BLOCK || obj.blockPos!! != neighbor) {
