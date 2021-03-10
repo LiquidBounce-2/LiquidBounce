@@ -318,34 +318,33 @@ class Scaffold : Module() {
 
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
-        if (strafeValue.get().equals("Off", true)) {
+        if (strafeValue.get().equals("Off", true))
             return
-        } else {
-            if (rotationsValue.get()
-                && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
-                && lockRotation != null
-            ) {
-                if (targetPlace == null) {
-                    var yaw = 0F
-                    for (i in 0..7) {
-                        if (abs(
-                                RotationUtils.getAngleDifference(
-                                    lockRotation!!.yaw,
-                                    (i * 45).toFloat()
-                                )
-                            ) < abs(RotationUtils.getAngleDifference(lockRotation!!.yaw, yaw))
-                        ) {
-                            yaw = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
-                        }
+
+        update()
+        if (rotationsValue.get()
+            && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
+            && lockRotation != null
+        ) {
+            if (targetPlace == null) {
+                var yaw = 0F
+                for (i in 0..7) {
+                    if (abs(
+                            RotationUtils.getAngleDifference(
+                                lockRotation!!.yaw,
+                                (i * 45).toFloat()
+                            )
+                        ) < abs(RotationUtils.getAngleDifference(lockRotation!!.yaw, yaw))
+                    ) {
+                        yaw = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
                     }
-                    lockRotation!!.yaw = yaw
                 }
-                setRotation(lockRotation!!)
-                lockRotationTimer.update()
+                lockRotation!!.yaw = yaw
             }
-            update()
-            lockRotation!!.applyStrafeToPlayer(event)
+            setRotation(lockRotation!!)
+            lockRotationTimer.update()
         }
+        lockRotation!!.applyStrafeToPlayer(event)
         event.cancelEvent()
     }
 
