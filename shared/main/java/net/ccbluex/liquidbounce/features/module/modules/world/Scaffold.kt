@@ -92,7 +92,7 @@ class Scaffold : Module() {
     private val expandLengthValue = IntegerValue("ExpandLength", 1, 1, 6)
 
     // Rotation Options
-    private val strafeValue = ListValue("Strafe", arrayOf("Off", "AAC"), "Off")
+    private val strafeModeValue = ListValue("Strafe", arrayOf("Off", "AAC"), "Off")
     private val rotationsValue = BoolValue("Rotations", true)
     private val silentRotationValue = BoolValue("SilentRotation", true)
     private val keepRotationValue = BoolValue("KeepRotation", true)
@@ -318,7 +318,7 @@ class Scaffold : Module() {
 
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
-        if (strafeValue.get().equals("Off", true))
+        if (strafeModeValue.get().equals("Off", true))
             return
 
         update()
@@ -356,7 +356,7 @@ class Scaffold : Module() {
         if (rotationsValue.get()
             && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
             && lockRotation != null
-            && strafeValue.get().equals("Off", true)
+            && strafeModeValue.get().equals("Off", true)
         ) {
             setRotation(lockRotation!!)
             if (eventState == EventState.POST)
@@ -369,7 +369,7 @@ class Scaffold : Module() {
         )
             place()
         // Update and search for a new block
-        if (eventState == EventState.PRE && strafeValue.get().equals("Off", true))
+        if (eventState == EventState.PRE && strafeModeValue.get().equals("Off", true))
             update()
 
         // Reset placeable delay
