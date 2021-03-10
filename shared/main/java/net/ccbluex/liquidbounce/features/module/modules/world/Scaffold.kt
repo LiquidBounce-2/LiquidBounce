@@ -377,7 +377,8 @@ class Scaffold : Module() {
             && !rotationStrafeValue.get()
         ) {
             setRotation(lockRotation!!)
-            lockRotationTimer.update()
+            if (eventState == EventState.POST)
+                lockRotationTimer.update()
         }
 
         if ((facesBlock || rotationModeValue.get().equals("Off", true)) && placeModeValue.get()
