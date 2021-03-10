@@ -222,8 +222,8 @@ class Scaffold : Module() {
                 }
             }
             if (zitterValue.get()) {
-                when (zitterModeValue.get()) {
-                    "Smooth" -> {
+                when (zitterModeValue.get().toLowerCase()) {
+                    "smooth" -> {
                         if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
                             mc.gameSettings.keyBindRight.pressed = false
                         }
@@ -242,7 +242,7 @@ class Scaffold : Module() {
                             mc.gameSettings.keyBindLeft.pressed = true
                         }
                     }
-                    "Teleport" -> {
+                    "teleport" -> {
                         MovementUtils.strafe(zitterSpeed.get())
                         val yaw: Double =
                             Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
@@ -318,7 +318,7 @@ class Scaffold : Module() {
 
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
-        if(strafeValue.get().equals("Off", true)) {
+        if (strafeValue.get().equals("Off", true)) {
             return
         } else {
             if (rotationsValue.get()
@@ -363,7 +363,7 @@ class Scaffold : Module() {
             if (eventState == EventState.POST)
                 lockRotationTimer.update()
         }
-        
+
         // Face block
         if ((facesBlock || !rotationsValue.get()) && placeModeValue.get()
                 .equals(eventState.stateName, true)
@@ -447,7 +447,7 @@ class Scaffold : Module() {
 
     fun place() {
         if (targetPlace == null) {
-            if (placeableDelay.get()) 
+            if (placeableDelay.get())
                 delayTimer.reset()
             return
         }
@@ -459,11 +459,11 @@ class Scaffold : Module() {
         if (itemStack == null || !classProvider.isItemBlock(itemStack.item) ||
             classProvider.isBlockBush(itemStack.item!!.asItemBlock().block) || mc.thePlayer!!.heldItem!!.stackSize <= 0
         ) {
-            
+
             val blockSlot = InventoryUtils.findAutoBlockBlock()
             if (blockSlot == -1)
                 return
-            
+
             when (autoBlockValue.get()) {
                 "Off" -> {
                     return
@@ -485,7 +485,7 @@ class Scaffold : Module() {
             }
             itemStack = mc.thePlayer!!.inventoryContainer.getSlot(blockSlot).stack
         }
-        
+
         if (mc.playerController.onPlayerRightClick(
                 mc.thePlayer!!,
                 mc.theWorld!!,
@@ -496,7 +496,7 @@ class Scaffold : Module() {
             )
         ) {
             delayTimer.reset()
-            delay = if(!placeableDelay.get()) 0 else TimeUtils.randomDelay(minDelayValue.get(), maxDelayValue.get())
+            delay = if (!placeableDelay.get()) 0 else TimeUtils.randomDelay(minDelayValue.get(), maxDelayValue.get())
 
             if (mc.thePlayer!!.onGround) {
                 val modifier: Float = speedModifierValue.get()
@@ -512,7 +512,7 @@ class Scaffold : Module() {
         if (autoBlockValue.get().equals("Switch", true)) {
             if (slot != mc.thePlayer!!.inventory.currentItem) {
                 mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(mc.thePlayer!!.inventory.currentItem))
-            }    
+            }
         }
         targetPlace = null
     }
