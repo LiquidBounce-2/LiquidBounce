@@ -418,29 +418,34 @@ class Scaffold : Module() {
                 ).down()))
         if (!expand && (!isReplaceable(blockPosition) || search(blockPosition, !shouldGoDown)))
             return
+
         if (expand) {
             for (i in 0 until expandLengthValue.get()) {
                 if (search(
                         blockPosition.add(
-                            if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(
-                                    EnumFacingType.WEST
-                                )
-                            ) -i else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.EAST)) i else 0,
-                            0,
-                            if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.NORTH)) -i else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(
-                                    EnumFacingType.SOUTH
-                                )
-                            ) i else 0
+                            when (mc.thePlayer!!.horizontalFacing) {
+                                classProvider.getEnumFacing(EnumFacingType.WEST) -> -i
+                                classProvider.getEnumFacing(EnumFacingType.EAST) -> i
+                                else -> 0
+                            }, 0,
+                            when (mc.thePlayer!!.horizontalFacing) {
+                                classProvider.getEnumFacing(EnumFacingType.NORTH) -> -i
+                                classProvider.getEnumFacing(EnumFacingType.SOUTH) -> i
+                                else -> 0
+                            }
                         ), false
                     )
                 )
                     return
             }
         } else if (searchValue.get()) {
-            for (x in -1..1)
-                for (z in -1..1)
-                    if (search(blockPosition.add(x, 0, z), !shouldGoDown))
+            for (x in -1..1) {
+                for (z in -1..1) {
+                    if (search(blockPosition.add(x, 0, z), !shouldGoDown)) {
                         return
+                    }
+                }
+            }
         }
     }
 
@@ -588,15 +593,17 @@ class Scaffold : Module() {
         if (!markValue.get()) return
         for (i in 0 until if (modeValue.get().equals("Expand", true)) expandLengthValue.get() + 1 else 2) {
             val blockPos = WBlockPos(
-                mc.thePlayer!!.posX + if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.WEST)) -i.toDouble() else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(
-                        EnumFacingType.EAST
-                    )
-                ) i.toDouble() else 0.0,
+                mc.thePlayer!!.posX + when (mc.thePlayer!!.horizontalFacing) {
+                    classProvider.getEnumFacing(EnumFacingType.WEST) -> -i.toDouble()
+                    classProvider.getEnumFacing(EnumFacingType.EAST) -> i.toDouble()
+                    else -> 0.0
+                },
                 if (sameYValue.get() && launchY <= mc.thePlayer!!.posY) launchY - 1.0 else mc.thePlayer!!.posY - (if (mc.thePlayer!!.posY == mc.thePlayer!!.posY + 0.5) 0.0 else 1.0) - if (shouldGoDown) 1.0 else 0.0,
-                mc.thePlayer!!.posZ + if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(EnumFacingType.NORTH)) -i.toDouble() else if (mc.thePlayer!!.horizontalFacing == classProvider.getEnumFacing(
-                        EnumFacingType.SOUTH
-                    )
-                ) i.toDouble() else 0.0
+                mc.thePlayer!!.posZ + when (mc.thePlayer!!.horizontalFacing) {
+                    classProvider.getEnumFacing(EnumFacingType.NORTH) -> -i.toDouble()
+                    classProvider.getEnumFacing(EnumFacingType.SOUTH) -> i.toDouble()
+                    else -> 0.0
+                }
             )
             val placeInfo: PlaceInfo? = PlaceInfo.get(blockPos)
             if (isReplaceable(blockPos) && placeInfo != null) {
@@ -625,7 +632,7 @@ class Scaffold : Module() {
         val ySSV = calcStepSize(yRV.toFloat())
         val eyesPos = WVec3(
             mc.thePlayer!!.posX,
-            mc.thePlayer!!.entityBoundingBox.minY + mc.thePlayer!!.eyeHeight,
+            mc.thePlayer!!.posY + mc.thePlayer!!.eyeHeight,
             mc.thePlayer!!.posZ
         )
         var placeRotation: PlaceRotation? = null
@@ -643,7 +650,7 @@ class Scaffold : Module() {
                         val posVec = WVec3(blockPosition).addVector(xSearch, ySearch, zSearch)
                         val distanceSqPosVec = eyesPos.squareDistanceTo(posVec)
                         val hitVec = posVec.add(WVec3(dirVec.xCoord * 0.5, dirVec.yCoord * 0.5, dirVec.zCoord * 0.5))
-                        if (checks && (eyesPos.squareDistanceTo(hitVec) > 18.0 || distanceSqPosVec > eyesPos.squareDistanceTo(
+                        if (checks && (eyesPos.squareDistanceTo(hitVec) > 18.0625 || distanceSqPosVec > eyesPos.squareDistanceTo(
                                 posVec.add(dirVec)
                             ) || mc.theWorld!!.rayTraceBlocks(eyesPos, hitVec, false, true, false) != null)
                         ) {
@@ -745,8 +752,9 @@ class Scaffold : Module() {
                     if (heldItem != null && heldItem == itemStack || !InventoryUtils.BLOCK_BLACKLIST.contains(block) && !classProvider.isBlockBush(
                             block
                         )
-                    )
+                    ) {
                         amount += itemStack.stackSize
+                    }
                 }
             }
             return amount
