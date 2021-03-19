@@ -190,6 +190,9 @@ class Scaffold : Module() {
 
     // Downwards
     private var shouldGoDown: Boolean = false
+    
+    // Rotation strafe
+    private var yaw = 0F
 
     // ENABLING MODULE
     override fun onEnable() {
@@ -322,30 +325,13 @@ class Scaffold : Module() {
             return
 
         update()
-        if (rotationsValue.get()
-            && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
-            && lockRotation != null
-        ) {
-            if (targetPlace == null) {
-                var yaw = 0F
-                for (i in 0..7) {
-                    if (abs(
-                            RotationUtils.getAngleDifference(
-                                lockRotation!!.yaw,
-                                (i * 45).toFloat()
-                            )
-                        ) < abs(RotationUtils.getAngleDifference(lockRotation!!.yaw, yaw))
-                    ) {
-                        yaw = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
-                    }
-                }
-                lockRotation!!.yaw = yaw
-            }
+        if (rotationsValue.get() && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get())) && lockRotation != null) {
+            lockRotation!!.yaw = aac
             setRotation(lockRotation!!)
             lockRotationTimer.update()
+            lockRotation!!.applyStrafeToPlayer(event)
+            event.cancelEvent()
         }
-        lockRotation!!.applyStrafeToPlayer(event)
-        event.cancelEvent()
     }
 
     @EventTarget
@@ -468,20 +454,20 @@ class Scaffold : Module() {
             if (blockSlot == -1)
                 return
 
-            when (autoBlockValue.get()) {
-                "Off" -> {
+            when (autoBlockValue.get().toLowerCase()) {
+                "off" -> {
                     return
                 }
-                "Pick" -> {
+                "pick" -> {
                     mc.thePlayer!!.inventory.currentItem = blockSlot - 36
                     mc.playerController.updateController()
                 }
-                "Spoof" -> {
+                "spoof" -> {
                     if (blockSlot - 36 != slot) {
                         mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(blockSlot - 36))
                     }
                 }
-                "Switch" -> {
+                "switch" -> {
                     if (blockSlot - 36 != slot) {
                         mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(blockSlot - 36))
                     }
@@ -670,10 +656,9 @@ class Scaffold : Module() {
                                 continue
                             }
                         }
-                        val rotation = Rotation(
-                            wrapAngleTo180_float(Math.toDegrees(atan2(diffZ, diffX)).toFloat() - 90f),
-                            wrapAngleTo180_float(-Math.toDegrees(atan2(diffY, diffXZ)).toFloat())
-                        )
+                        yaw = wrapAngleTo180_float(Math.toDegrees(atan2(diffZ, diffX)).toFloat() - 90f)
+                        val pitch = wrapAngleTo180_float(-Math.toDegrees(atan2(diffY, diffXZ)).toFloat())
+                        val rotation = Rotation(if (strafeModeValue.get().equals("AAC", true)) aac else yaw, pitch)
                         val rotationVector = RotationUtils.getVectorForRotation(rotation)
                         val vector = eyesPos.addVector(
                             rotationVector.xCoord * distanceSqPosVec,
@@ -739,6 +724,24 @@ class Scaffold : Module() {
         accuracy += accuracy % 2 // If it is set to uneven it changes it to even. Fixes a bug
         return if (range / accuracy < 0.01) 0.01 else (range / accuracy)
     }
+    
+    private val aac: Float
+        get() {
+            var yaw1 = 0F
+            for (i in 0..7) {
+                if (abs(
+                        RotationUtils.getAngleDifference(
+                            yaw,
+                            (i * 45).toFloat()
+                        )
+                    ) < abs(RotationUtils.getAngleDifference(yaw, yaw1))
+                ) {
+                    yaw1 = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
+                }
+            }
+            yaw = yaw1
+            return yaw
+        }
 
     // RETURN HOTBAR AMOUNT
     private val blocksAmount: Int
