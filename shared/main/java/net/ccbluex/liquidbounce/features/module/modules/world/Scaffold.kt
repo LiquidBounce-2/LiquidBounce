@@ -92,7 +92,7 @@ class Scaffold : Module() {
     private val expandLengthValue = IntegerValue("ExpandLength", 1, 1, 6)
 
     // Rotation Options
-    private val strafeModeValue = ListValue("Strafe", arrayOf("Off", "AAC"), "Off")
+    private val strafeMode = ListValue("Strafe", arrayOf("Off", "AAC"), "Off")
     private val rotationsValue = BoolValue("Rotations", true)
     private val silentRotationValue = BoolValue("SilentRotation", true)
     private val keepRotationValue = BoolValue("KeepRotation", true)
@@ -318,7 +318,7 @@ class Scaffold : Module() {
 
     @EventTarget
     fun onStrafe(event: StrafeEvent) {
-        if (strafeModeValue.get().equals("Off", true))
+        if (strafeMode.get().equals("Off", true))
             return
 
         update()
@@ -356,7 +356,7 @@ class Scaffold : Module() {
         if (rotationsValue.get()
             && (keepRotationValue.get() || !lockRotationTimer.hasTimePassed(keepLengthValue.get()))
             && lockRotation != null
-            && strafeModeValue.get().equals("Off", true)
+            && strafeMode.get().equals("Off", true)
         ) {
             setRotation(lockRotation!!)
             if (eventState == EventState.POST)
@@ -368,9 +368,9 @@ class Scaffold : Module() {
                 .equals(eventState.stateName, true)
         )
             place()
-        
+
         // Update and search for a new block
-        if (eventState == EventState.PRE && strafeModeValue.get().equals("Off", true))
+        if (eventState == EventState.PRE && strafeMode.get().equals("Off", true))
             update()
 
         // Reset placeable delay
@@ -469,20 +469,20 @@ class Scaffold : Module() {
             if (blockSlot == -1)
                 return
 
-            when (autoBlockValue.get()) {
-                "Off" -> {
+            when (autoBlockValue.get().toLowerCase()) {
+                "off" -> {
                     return
                 }
-                "Pick" -> {
+                "pick" -> {
                     mc.thePlayer!!.inventory.currentItem = blockSlot - 36
                     mc.playerController.updateController()
                 }
-                "Spoof" -> {
+                "spoof" -> {
                     if (blockSlot - 36 != slot) {
                         mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(blockSlot - 36))
                     }
                 }
-                "Switch" -> {
+                "switch" -> {
                     if (blockSlot - 36 != slot) {
                         mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(blockSlot - 36))
                     }
