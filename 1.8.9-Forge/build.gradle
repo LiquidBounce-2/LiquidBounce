@@ -87,10 +87,10 @@ dependencies {
     compile 'com.jagrosh:DiscordIPC:0.4'
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
 
-    implementation 'com.github.TheAltening:API-Java:master-SNAPSHOT'
-    implementation 'com.github.TheAltening:API-Java-AuthLib:-SNAPSHOT'
-    compile 'com.github.TheAltening:API-Java:api-2.0-SNAPSHOT'
-    compile 'com.github.TheAltening:API-Java-AuthLib:-SNAPSHOT'
+    implementation 'com.github.TheAltening:TheAltening4j:master-SNAPSHOT'
+    implementation 'com.github.TheAltening:TheAlteningAuth4j:-SNAPSHOT'
+    compile 'com.github.TheAltening:TheAltening4j:api-2.0-SNAPSHOT'
+    compile 'com.github.TheAltening:TheAlteningAuth4j:-SNAPSHOT'
     compile('commons-io:commons-io') {
         version {
             strictly '2.5'
@@ -103,7 +103,7 @@ dependencies {
 processResources {
     inputs.property 'version', project.version
     inputs.property 'mcversion', project.minecraft.version
-    
+
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
 
@@ -147,8 +147,8 @@ shadowJar {
 
         include(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
 
-        include(dependency('com.github.TheAltening:API-Java'))
-        include(dependency('com.github.TheAltening:API-Java-AuthLib'))
+        include(dependency('com.github.TheAltening:TheAltening4j'))
+        include(dependency('com.github.TheAltening:TheAlteningAuth4j'))
     }
 
     exclude 'dummyThing'
