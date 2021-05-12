@@ -4,8 +4,6 @@
  * https://github.com/CCBlueX/LiquidBounce/
  */
 
-@file:Suppress("BooleanLiteralArgument", "RedundantIf")
-
 package net.ccbluex.liquidbounce.features.module.modules.world
 
 import net.ccbluex.liquidbounce.LiquidBounce
@@ -38,7 +36,6 @@ import net.ccbluex.liquidbounce.value.BoolValue
 import net.ccbluex.liquidbounce.value.FloatValue
 import net.ccbluex.liquidbounce.value.IntegerValue
 import net.ccbluex.liquidbounce.value.ListValue
-import net.minecraft.util.MathHelper
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
 import java.awt.Color
@@ -336,7 +333,7 @@ class Scaffold : Module() {
                             )
                         ) < abs(RotationUtils.getAngleDifference(lockRotation!!.yaw, yaw))
                     ) {
-                        yaw = MathHelper.wrapAngleTo180_float((i * 45).toFloat())
+                        yaw = wrapAngleTo180_float((i * 45).toFloat())
                     }
                 }
                 lockRotation!!.yaw = yaw
@@ -466,6 +463,7 @@ class Scaffold : Module() {
         ) {
 
             val blockSlot = InventoryUtils.findAutoBlockBlock()
+
             if (blockSlot == -1)
                 return
 
@@ -509,10 +507,11 @@ class Scaffold : Module() {
                 mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ * modifier
             }
 
-            if (swingValue.get())
+            if (swingValue.get()) {
                 mc.thePlayer!!.swingItem()
-            else
+            } else {
                 mc.netHandler.addToSendQueue(classProvider.createCPacketAnimation())
+            }
         }
         if (autoBlockValue.get().equals("Switch", true)) {
             if (slot != mc.thePlayer!!.inventory.currentItem) {
@@ -653,7 +652,12 @@ class Scaffold : Module() {
                         val hitVec = posVec.add(WVec3(dirVec.xCoord * 0.5, dirVec.yCoord * 0.5, dirVec.zCoord * 0.5))
                         if (checks && (eyesPos.squareDistanceTo(hitVec) > 18.0625 || distanceSqPosVec > eyesPos.squareDistanceTo(
                                 posVec.add(dirVec)
-                            ) || mc.theWorld!!.rayTraceBlocks(eyesPos, hitVec, false, true, false) != null)
+                            ) || mc.theWorld!!.rayTraceBlocks(
+                                eyesPos, hitVec,
+                                stopOnLiquid = false,
+                                ignoreBlockWithoutBoundingBox = true,
+                                returnLastUncollidableBlock = false
+                            ) != null)
                         ) {
                             zSearch += xzSSV
                             continue
@@ -681,7 +685,12 @@ class Scaffold : Module() {
                             rotationVector.yCoord * distanceSqPosVec,
                             rotationVector.zCoord * distanceSqPosVec
                         )
-                        val obj = mc.theWorld!!.rayTraceBlocks(eyesPos, vector, false, false, true)
+                        val obj = mc.theWorld!!.rayTraceBlocks(
+                            eyesPos, vector,
+                            stopOnLiquid = false,
+                            ignoreBlockWithoutBoundingBox = false,
+                            returnLastUncollidableBlock = true
+                        )
                         if (obj!!.typeOfHit != IMovingObjectPosition.WMovingObjectType.BLOCK || obj.blockPos!! != neighbor) {
                             zSearch += xzSSV
                             continue
@@ -709,10 +718,10 @@ class Scaffold : Module() {
                     (Math.random() * (maxTurnSpeedValue.get() - minTurnSpeedValue.get()) + minTurnSpeedValue.get()).toFloat()
                 )
 
-                if ((10 * MathHelper.wrapAngleTo180_float(limitedRotation.yaw)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
+                if ((10 * wrapAngleTo180_float(limitedRotation.yaw)).roundToInt() == (10 * wrapAngleTo180_float(
                         placeRotation.rotation.yaw
                     )).roundToInt() &&
-                    (10 * MathHelper.wrapAngleTo180_float(limitedRotation.pitch)).roundToInt() == (10 * MathHelper.wrapAngleTo180_float(
+                    (10 * wrapAngleTo180_float(limitedRotation.pitch)).roundToInt() == (10 * wrapAngleTo180_float(
                         placeRotation.rotation.pitch
                     )).roundToInt()
                 ) {
