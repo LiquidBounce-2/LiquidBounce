@@ -67,7 +67,7 @@ class Scaffold : Module() {
     }
 
     // Placeable delay
-    private val placeableDelay = BoolValue("PlaceableDelay", true)
+    private val placeDelay = BoolValue("PlaceDelay", true)
 
     // Autoblock
     private val autoBlockValue = ListValue("AutoBlock", arrayOf("Off", "Pick", "Spoof", "Switch"), "Spoof")
@@ -136,8 +136,7 @@ class Scaffold : Module() {
     }
 
     // Zitter
-    private val zitterValue = BoolValue("Zitter", false)
-    private val zitterModeValue = ListValue("ZitterMode", arrayOf("Teleport", "Smooth"), "Teleport")
+    private val zitterMode = ListValue("Zitter", arrayOf("Off", "Teleport", "Smooth"), "Off")
     private val zitterSpeed = FloatValue("ZitterSpeed", 0.13f, 0.1f, 0.3f)
     private val zitterStrength = FloatValue("ZitterStrength", 0.05f, 0f, 0.2f)
 
@@ -205,8 +204,9 @@ class Scaffold : Module() {
         mc.timer.timerSpeed = timerValue.get()
         shouldGoDown =
             downValue.get() && !sameYValue.get() && mc.gameSettings.isKeyDown(mc.gameSettings.keyBindSneak) && blocksAmount > 1
-        if (shouldGoDown)
+        if (shouldGoDown) {
             mc.gameSettings.keyBindSneak.pressed = false
+        }
         if (slowValue.get()) {
             mc.thePlayer!!.motionX = mc.thePlayer!!.motionX * slowSpeed.get()
             mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ * slowSpeed.get()
@@ -218,35 +218,34 @@ class Scaffold : Module() {
                     mc.thePlayer!!.motionY = 0.0
                 }
             }
-            if (zitterValue.get()) {
-                when (zitterModeValue.get().toLowerCase()) {
-                    "smooth" -> {
-                        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
-                            mc.gameSettings.keyBindRight.pressed = false
-                        }
-                        if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft)) {
-                            mc.gameSettings.keyBindLeft.pressed = false
-                        }
-                        if (zitterTimer.hasTimePassed(100)) {
-                            zitterDirection = !zitterDirection
-                            zitterTimer.reset()
-                        }
-                        if (zitterDirection) {
-                            mc.gameSettings.keyBindRight.pressed = true
-                            mc.gameSettings.keyBindLeft.pressed = false
-                        } else {
-                            mc.gameSettings.keyBindRight.pressed = false
-                            mc.gameSettings.keyBindLeft.pressed = true
-                        }
+            when (zitterMode.get().toLowerCase()) {
+                "off" -> return
+                "smooth" -> {
+                    if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindRight)) {
+                        mc.gameSettings.keyBindRight.pressed = false
                     }
-                    "teleport" -> {
-                        MovementUtils.strafe(zitterSpeed.get())
-                        val yaw: Double =
-                            Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
-                        mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
-                        mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
+                    if (!mc.gameSettings.isKeyDown(mc.gameSettings.keyBindLeft)) {
+                        mc.gameSettings.keyBindLeft.pressed = false
+                    }
+                    if (zitterTimer.hasTimePassed(100)) {
                         zitterDirection = !zitterDirection
+                        zitterTimer.reset()
                     }
+                    if (zitterDirection) {
+                        mc.gameSettings.keyBindRight.pressed = true
+                        mc.gameSettings.keyBindLeft.pressed = false
+                    } else {
+                        mc.gameSettings.keyBindRight.pressed = false
+                        mc.gameSettings.keyBindLeft.pressed = true
+                    }
+                }
+                "teleport" -> {
+                    MovementUtils.strafe(zitterSpeed.get())
+                    val yaw: Double =
+                        Math.toRadians(mc.thePlayer!!.rotationYaw + if (zitterDirection) 90.0 else -90.0)
+                    mc.thePlayer!!.motionX = mc.thePlayer!!.motionX - sin(yaw) * zitterStrength.get()
+                    mc.thePlayer!!.motionZ = mc.thePlayer!!.motionZ + cos(yaw) * zitterStrength.get()
+                    zitterDirection = !zitterDirection
                 }
             }
         }
@@ -371,7 +370,7 @@ class Scaffold : Module() {
             update()
 
         // Reset placeable delay
-        if (targetPlace == null && placeableDelay.get())
+        if (targetPlace == null && placeDelay.get())
             delayTimer.reset()
     }
 
@@ -449,7 +448,7 @@ class Scaffold : Module() {
 
     fun place() {
         if (targetPlace == null) {
-            if (placeableDelay.get())
+            if (placeDelay.get())
                 delayTimer.reset()
             return
         }
@@ -468,9 +467,7 @@ class Scaffold : Module() {
                 return
 
             when (autoBlockValue.get().toLowerCase()) {
-                "off" -> {
-                    return
-                }
+                "off" -> return
                 "pick" -> {
                     mc.thePlayer!!.inventory.currentItem = blockSlot - 36
                     mc.playerController.updateController()
@@ -499,7 +496,7 @@ class Scaffold : Module() {
             )
         ) {
             delayTimer.reset()
-            delay = if (!placeableDelay.get()) 0 else TimeUtils.randomDelay(minDelayValue.get(), maxDelayValue.get())
+            delay = if (!placeDelay.get()) 0 else TimeUtils.randomDelay(minDelayValue.get(), maxDelayValue.get())
 
             if (mc.thePlayer!!.onGround) {
                 val modifier: Float = speedModifierValue.get()
@@ -544,8 +541,9 @@ class Scaffold : Module() {
         mc.timer.timerSpeed = 1f
         shouldGoDown = false
 
-        if (slot != mc.thePlayer!!.inventory.currentItem)
+        if (slot != mc.thePlayer!!.inventory.currentItem) {
             mc.netHandler.addToSendQueue(classProvider.createCPacketHeldItemChange(mc.thePlayer!!.inventory.currentItem))
+        }
     }
 
     // Entity movement event
